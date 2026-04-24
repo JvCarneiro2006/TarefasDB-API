@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+
+// CORS
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader('Access-Control-Allow-Methods', 'HEAD, GET, POST, PATCH, DELETE');
@@ -9,23 +11,29 @@ app.use((req, res, next) => {
     );
     next();
 });
+
 app.use(express.json());
-const PORT = process.env.PORT || 3000;
+
+// Rotas
 const routes = require('./routes/routes');
 app.use('/api', routes);
-// Obtendo os parametros passados pela linha de comando
-const mongoURL = process.env.MONGO_URL || process.env.MONGODB_URI;
-//Configurando a conexao com o Banco de Dados
-var mongoose = require('mongoose');
-mongoose.connect(mongoURL);
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on('error', (error) => {
-    console.log(error)
-})
-db.once('connected', () => {
+
+// Porta
+const PORT = process.env.PORT || 3000;
+
+// MongoDB
+const mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
     console.log('Database Connected');
+
+    // Só inicia o servidor depois de conectar
     app.listen(PORT, () => {
-        console.log(`Server Started at ${PORT}`)
-    })
+        console.log(`Servidor rodando na porta ${PORT}`);
+    });
+
 })
+.catch((error) => {
+    console.log(error);
+});
